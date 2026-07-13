@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        http-equiv="Content-Security-Policy"
+        content="
+            default-src 'self';
+            connect-src 'self' https://spark.lucko.me;
+            script-src 'self';
+            style-src 'self' 'unsafe-inline';
+            img-src 'self' data:;
+            object-src 'none';
+            base-uri 'self';
+            form-action 'self';
+        "
+    >
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Spark Configuration Checker</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, sans-serif;
+            background: #202124;
+            color: #f1f3f4;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 48px auto;
+            padding: 0 24px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 2rem;
+        }
+
+        p {
+            color: #bdc1c6;
+            line-height: 1.5;
+        }
+
+        .card {
+            margin-top: 32px;
+            background: #292a2d;
+            border-radius: 8px;
+            padding: 24px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #555;
+            background: #202124;
+            color: white;
+            font: inherit;
+        }
+
+        button {
+            margin-top: 16px;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            background: #4285f4;
+            color: white;
+            cursor: pointer;
+            font: inherit;
+        }
+
+        button:hover {
+            background: #5a95f5;
+        }
+
+        #status {
+            margin-top: 18px;
+            color: #bdc1c6;
+        }
+
+        #results {
+            margin-top: 32px;
+        }
+    </style>
+</head>
+
+<body>
+
+<main>
+
+    <h1>Spark Configuration Checker</h1>
+
+    <p>
+        Paste a Spark report URL. The application will download the server
+        configuration and run the configured checks.
+    </p>
+
+    <div class="card">
+
+        <label for="spark-url">
+            Spark report URL
+        </label>
+
+        <input
+            id="spark-url"
+            type="url"
+            placeholder="https://spark.lucko.me/xxxxxxxxxx"
+            spellcheck="false"
+            autocomplete="off"
+        >
+
+        <button id="analyze">
+            Analyze
+        </button>
+
+        <div id="status"></div>
+
+    </div>
+
+    <div id="results"></div>
+
+</main>
+
+<script src="app.js"></script>
+
+</body>
+</html>
