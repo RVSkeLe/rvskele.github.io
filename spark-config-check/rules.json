@@ -1,0 +1,349 @@
+{
+  "schemaVersion": 2,
+  "rulesVersion": "2.0.0",
+  "inputs": {
+    "compressionThreshold": {
+      "type": "config-value",
+      "file": "server.properties",
+      "path": [
+        "network-compression-threshold"
+      ]
+    },
+    "rconEnabled": {
+      "type": "config-value",
+      "file": "server.properties",
+      "path": [
+        "enable-rcon"
+      ]
+    },
+    "onlineMode": {
+      "type": "config-value",
+      "file": "server.properties",
+      "path": [
+        "online-mode"
+      ]
+    },
+    "velocityEnabled": {
+      "type": "config-value",
+      "file": "paper/",
+      "path": [
+        "global.yml",
+        "proxies",
+        "velocity",
+        "enabled"
+      ]
+    },
+    "velocityOnlineMode": {
+      "type": "config-value",
+      "file": "paper/",
+      "path": [
+        "global.yml",
+        "proxies",
+        "velocity",
+        "online-mode"
+      ]
+    },
+    "bungeeEnabled": {
+      "type": "config-value",
+      "file": "spigot.yml",
+      "path": [
+        "settings",
+        "bungeecord"
+      ]
+    },
+    "bungeeOnlineMode": {
+      "type": "config-value",
+      "file": "paper/",
+      "path": [
+        "global.yml",
+        "proxies",
+        "bungee-cord",
+        "online-mode"
+      ]
+    },
+    "redstoneImplementation": {
+      "type": "config-value",
+      "file": "paper/",
+      "path": [
+        "world-defaults.yml",
+        "misc",
+        "redstone-implementation"
+      ]
+    },
+    "pathfindingOnBlockUpdate": {
+      "type": "config-value",
+      "file": "paper/",
+      "path": [
+        "world-defaults.yml",
+        "misc",
+        "update-pathfinding-on-block-update"
+      ]
+    },
+    "viewDistance": {
+      "type": "world-setting",
+      "key": "view-distance"
+    },
+    "simulationDistance": {
+      "type": "world-setting",
+      "key": "simulation-distance"
+    },
+    "mobSpawnRange": {
+      "type": "spigot-world-setting",
+      "key": "mob-spawn-range"
+    }
+  },
+  "rules": [
+    {
+      "id": "network-compression-threshold",
+      "type": "outcomes",
+      "group": "server.properties",
+      "title": "Network compression threshold",
+      "description": "Lower values compress more packets and use more CPU. Higher values reduce compression work but may increase network traffic.",
+      "values": {
+        "value": "@inputs.compressionThreshold.value"
+      },
+      "outcomes": [
+        {
+          "expression": {
+            "ref": "$value",
+            "operator": "exists",
+            "value": false
+          },
+          "status": "unknown",
+          "message": "The network compression threshold was not found."
+        },
+        {
+          "expression": {
+            "ref": "$value",
+            "operator": "equals",
+            "value": 256
+          },
+          "status": "pass",
+          "message": "The network compression threshold is using the default value of 256 bytes."
+        }
+      ],
+      "defaultOutcome": {
+        "status": "info",
+        "message": "The network compression threshold is {{value}} rather than the default value of 256 bytes. This may be intentional."
+      }
+    },
+    {
+      "id": "rcon",
+      "type": "outcomes",
+      "group": "server.properties",
+      "title": "RCON",
+      "description": "RCON provides remote administrative access to the server console.",
+      "values": {
+        "value": "@inputs.rconEnabled.value"
+      },
+      "outcomes": [
+        {
+          "expression": {
+            "ref": "$value",
+            "operator": "exists",
+            "value": false
+          },
+          "status": "unknown",
+          "message": "The RCON setting was not found."
+        },
+        {
+          "expression": {
+            "ref": "$value",
+            "operator": "equals",
+            "value": false
+          },
+          "status": "pass",
+          "message": "RCON is disabled."
+        }
+      ],
+      "defaultOutcome": {
+        "status": "warning",
+        "message": "RCON is enabled. Confirm that this was intentional and that access is properly restricted."
+      }
+    },
+    {
+      "id": "redstone-implementation",
+      "type": "outcomes",
+      "group": "Paper world-defaults configuration",
+      "title": "Redstone implementation",
+      "description": "Alternate Current can reduce redstone update overhead on Paper servers.",
+      "appliesWhen": {
+        "ref": "@inputs.redstoneImplementation.available",
+        "operator": "equals",
+        "value": true
+      },
+      "values": {
+        "value": "@inputs.redstoneImplementation.value"
+      },
+      "outcomes": [
+        {
+          "expression": {
+            "ref": "$value",
+            "operator": "exists",
+            "value": false
+          },
+          "status": "unknown",
+          "message": "The Paper redstone implementation setting was not found."
+        },
+        {
+          "expression": {
+            "ref": "$value",
+            "operator": "equals",
+            "value": "ALTERNATE_CURRENT"
+          },
+          "status": "pass",
+          "message": "Alternate Current is enabled."
+        }
+      ],
+      "defaultOutcome": {
+        "status": "warning",
+        "message": "Expected \"ALTERNATE_CURRENT\", found {{value}}."
+      }
+    },
+    {
+      "id": "pathfinding-on-block-update",
+      "type": "outcomes",
+      "group": "Paper world-defaults configuration",
+      "title": "Pathfinding updates on block changes",
+      "description": "Disabling pathfinding updates caused by block changes may reduce entity pathfinding work, but entities can react less promptly to terrain changes.",
+      "appliesWhen": {
+        "ref": "@inputs.pathfindingOnBlockUpdate.available",
+        "operator": "equals",
+        "value": true
+      },
+      "values": {
+        "value": "@inputs.pathfindingOnBlockUpdate.value"
+      },
+      "outcomes": [
+        {
+          "expression": {
+            "ref": "$value",
+            "operator": "exists",
+            "value": false
+          },
+          "status": "unknown",
+          "message": "The Paper pathfinding-on-block-update setting was not found."
+        },
+        {
+          "expression": {
+            "ref": "$value",
+            "operator": "equals",
+            "value": false
+          },
+          "status": "pass",
+          "message": "Pathfinding updates on block changes are disabled."
+        }
+      ],
+      "defaultOutcome": {
+        "status": "info",
+        "message": "Pathfinding updates on block changes are enabled. Setting this to false may reduce pathfinding overhead."
+      }
+    },
+    {
+      "id": "online-mode",
+      "type": "outcomes",
+      "group": "Misc",
+      "title": "Online mode check",
+      "values": {
+        "onlineMode": "@inputs.onlineMode.value",
+        "velocityEnabled": "@inputs.velocityEnabled.value",
+        "velocityOnlineMode": "@inputs.velocityOnlineMode.value",
+        "bungeeEnabled": "@inputs.bungeeEnabled.value",
+        "bungeeOnlineMode": "@inputs.bungeeOnlineMode.value"
+      },
+      "outcomes": [
+        {
+          "expression": {
+            "ref": "$onlineMode",
+            "operator": "exists",
+            "value": false
+          },
+          "status": "unknown",
+          "message": "server.properties \u2192 online-mode was not found."
+        },
+        {
+          "expression": {
+            "any": [
+              {
+                "ref": "$onlineMode",
+                "operator": "equals",
+                "value": true
+              },
+              {
+                "all": [
+                  {
+                    "ref": "$velocityEnabled",
+                    "operator": "equals",
+                    "value": true
+                  },
+                  {
+                    "ref": "$velocityOnlineMode",
+                    "operator": "equals",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "all": [
+                  {
+                    "ref": "$bungeeEnabled",
+                    "operator": "equals",
+                    "value": true
+                  },
+                  {
+                    "ref": "$bungeeOnlineMode",
+                    "operator": "equals",
+                    "value": true
+                  }
+                ]
+              }
+            ]
+          },
+          "status": "pass",
+          "message": "Player authentication is enabled."
+        }
+      ],
+      "defaultOutcome": {
+        "status": "warning",
+        "message": "The server appears to accept unauthenticated players."
+      }
+    },
+    {
+      "id": "effective-view-distance",
+      "type": "world-limit",
+      "group": "World distances",
+      "title": "Effective view distance",
+      "input": "@inputs.viewDistance",
+      "maximum": 10,
+      "severity": "warning",
+      "description": "Resolves server.properties, the Spigot default, and explicit per-world overrides."
+    },
+    {
+      "id": "effective-simulation-distance",
+      "type": "world-limit",
+      "group": "World distances",
+      "title": "Effective simulation distance",
+      "input": "@inputs.simulationDistance",
+      "maximum": 8,
+      "severity": "warning",
+      "description": "Resolves server.properties, the Spigot default, and explicit per-world overrides."
+    },
+    {
+      "id": "mob-spawn-range",
+      "type": "world-relation",
+      "group": "Spigot world settings",
+      "title": "Mob spawn range",
+      "leftInput": "@inputs.mobSpawnRange",
+      "rightInput": "@inputs.simulationDistance",
+      "allowedOffsets": [
+        -1,
+        0
+      ],
+      "minimumExclusive": 2,
+      "minimumSeverity": "warning",
+      "severity": "info",
+      "skipWhenUnavailable": true,
+      "description": "Mob spawn range should generally equal the effective simulation distance or be one chunk lower, while remaining greater than 2."
+    }
+  ]
+}

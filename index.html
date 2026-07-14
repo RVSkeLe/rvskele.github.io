@@ -1,139 +1,144 @@
-<!DOCTYPE html>
+<!doctype html>
+
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta
-        http-equiv="Content-Security-Policy"
-        content="
-            default-src 'self';
-            connect-src 'self' https://spark.lucko.me;
-            script-src 'self';
-            style-src 'self' 'unsafe-inline';
-            img-src 'self' data:;
-            object-src 'none';
-            base-uri 'self';
-            form-action 'self';
-        "
-    >
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Spark Configuration Checker</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+<title>Profiler Utils</title>
 
-        body {
-            margin: 0;
-            font-family: system-ui, sans-serif;
-            background: #202124;
-            color: #f1f3f4;
-        }
+<meta
+    name="description"
+    content="A collection of browser-based Minecraft server utilities."
+>
 
-        main {
-            max-width: 1100px;
-            margin: 48px auto;
-            padding: 0 24px;
-        }
+<style>
+    :root {
+        color-scheme: dark;
+        font-family: Inter, system-ui, sans-serif;
+        background: #111315;
+        color: #eef1f4;
+    }
 
-        h1 {
-            margin: 0 0 8px;
-            font-size: 2rem;
-        }
+    * {
+        box-sizing: border-box;
+    }
 
-        p {
-            color: #bdc1c6;
-            line-height: 1.5;
-        }
+    body {
+        margin: 0;
+        background: #111315;
+    }
 
-        .card {
-            margin-top: 32px;
-            background: #292a2d;
-            border-radius: 8px;
-            padding: 24px;
-        }
+    main {
+        width: min(900px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 64px 0;
+    }
 
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
+    .eyebrow {
+        color: #8ab4f8;
+        text-transform: uppercase;
+        letter-spacing: .12em;
+        font-size: .8rem;
+        font-weight: 700;
+        margin: 0 0 .5rem;
+    }
 
-        input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid #555;
-            background: #202124;
-            color: white;
-            font: inherit;
-        }
+    h1 {
+        margin: 0;
+        font-size: clamp(2.5rem, 6vw, 4rem);
+    }
 
-        button {
-            margin-top: 16px;
-            padding: 10px 18px;
-            border: none;
-            border-radius: 6px;
-            background: #4285f4;
-            color: white;
-            cursor: pointer;
-            font: inherit;
-        }
+    .subtitle {
+        margin: 1rem 0 3rem;
+        color: #aeb7c2;
+        line-height: 1.7;
+        max-width: 720px;
+    }
 
-        button:hover {
-            background: #5a95f5;
-        }
+    .projects {
+        display: grid;
+        gap: 20px;
+    }
 
-        #status {
-            margin-top: 18px;
-            color: #bdc1c6;
-        }
+    .card {
+        display: block;
+        text-decoration: none;
+        color: inherit;
 
-        #results {
-            margin-top: 32px;
-        }
-    </style>
+        padding: 24px;
+        border: 1px solid #2f363d;
+        border-radius: 12px;
+        background: #1a1d21;
+
+        transition: border-color .15s ease, transform .15s ease;
+    }
+
+    .card:hover {
+        border-color: #6c9fe8;
+        transform: translateY(-2px);
+    }
+
+    .card h2 {
+        margin: 0 0 .5rem;
+    }
+
+    .card p {
+        margin: 0;
+        color: #aeb7c2;
+        line-height: 1.6;
+    }
+
+    .status {
+        margin-top: 1rem;
+        color: #8ab4f8;
+        font-weight: 600;
+    }
+
+    footer {
+        margin-top: 48px;
+        color: #808892;
+        font-size: .9rem;
+    }
+</style>
+
 </head>
-
 <body>
 
 <main>
 
-    <h1>Spark Configuration Checker</h1>
+<p class="eyebrow">Minecraft Tools</p>
 
-    <p>
-        Paste a Spark report URL. The application will download the server
-        configuration and run the configured checks.
-    </p>
+<h1>Profiler Utils</h1>
 
-    <div class="card">
+<p class="subtitle">
+    A collection of lightweight browser-based utilities for Minecraft
+    server administration, configuration analysis, and profiling.
+    Each tool is completely standalone and runs entirely in your browser.
+</p>
 
-        <label for="spark-url">
-            Spark report URL
-        </label>
+<section class="projects">
 
-        <input
-            id="spark-url"
-            type="url"
-            placeholder="https://spark.lucko.me/xxxxxxxxxx"
-            spellcheck="false"
-            autocomplete="off"
-        >
+    <a class="card" href="./spark-config-check/">
+        <h2>Spark Configuration Checker</h2>
 
-        <button id="analyze">
-            Analyze
-        </button>
+        <p>
+            Analyze the configuration contained in a spark report,
+            inspect effective world settings, and validate Paper,
+            Spigot, and vanilla configuration against configurable rules.
+        </p>
 
-        <div id="status"></div>
+        <div class="status">Open →</div>
+    </a>
 
-    </div>
+</section>
 
-    <div id="results"></div>
+<footer>
+    Additional tools will appear here as they are published.
+</footer>
 
 </main>
-
-<script src="app.js"></script>
 
 </body>
 </html>
