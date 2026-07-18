@@ -64,10 +64,16 @@ function resolveInput(definition, configurations) {
   switch (definition.type) {
     case "config-value":
       return resolveConfigValue(definition, configurations);
+
     case "world-setting":
-      return resolveWorldSetting(definition, configurations, false);
+      return resolveSpigotWorldSetting(definition, configurations, false);
+
     case "spigot-world-setting":
-      return resolveWorldSetting(definition, configurations, true);
+      return resolveSpigotWorldSetting(definition, configurations, true);
+
+    case "paper-world-setting":
+      return resolvePaperWorldSetting(definition, configurations);
+
     default:
       throw new Error(`Unsupported input type: ${String(definition.type)}`);
   }
@@ -92,13 +98,125 @@ function resolveConfigValue(definition, configurations) {
     kind: "scalar",
     available: true,
     found: lookup.found,
-    value: lookup.value,
+    value: normalizeConfigValue(lookup.value),
     file: definition.file,
     path: definition.path ?? []
   };
 }
 
-function resolveWorldSetting(definition, configurations, spigotOnly) {
+// Negative values are seen as strings
+function normalizeConfigValue(value) {
+    if (
+        typeof value === "string" &&
+        /^-?(?:0|[1-9]\d*)(?:\.\d+)?$/.test(value.trim())
+    ) {
+        return Number(value);
+    }
+
+    return value;
+}
+
+function resolvePaperWorldSetting(definition, configurations) {
+  const paper = configurations.files["paper/"];
+  const bukkit = configurations.files["bukkit.yml"];
+
+  const key = definition.key;
+  const paperPath = definition.paperPath ?? [];
+  const bukkitPath = definition.bukkitPath ?? [];
+  const inheritedValue = definition.inheritedValue ?? -1;
+
+  if (!paper) {
+    return {
+      kind: "world",
+      available: false,
+      key,
+      source: "not-applicable",
+      error: configurations.errors["paper/"] ?? "paper/ was not found."
+    };
+  }
+
+  if (!bukkit) {
+    return {
+      kind: "world",
+      available: false,
+      key,
+      source: "paper",
+      error: configurations.errors["bukkit.yml"] ?? "bukkit.yml was not found."
+    };
+  }
+
+  const bukkitLookup = getPath(bukkit, bukkitPath);
+  const bukkitValue = bukkitLookup.value;
+
+  const worldDefaults = paper["world-defaults.yml"];
+  const defaultLookup = getPath(worldDefaults, paperPath);
+  const defaultRaw = defaultLookup.value;
+
+  const hasPaperDefaultOverride =
+    defaultLookup.found &&
+    defaultRaw !== undefined &&
+    defaultRaw !== null &&
+    defaultRaw !== inheritedValue;
+
+  const defaultValue = hasPaperDefaultOverride
+    ? defaultRaw
+    : bukkitValue;
+
+  const worlds = [
+    {
+      world: "default",
+      value: defaultValue,
+      source: hasPaperDefaultOverride
+        ? `paper/world-defaults.yml ${paperPath.join(".")}`
+        : `bukkit.yml ${bukkitPath.join(".")}`
+    }
+  ];
+
+  for (const [filename, worldConfig] of Object.entries(paper)) {
+    if (
+      filename === "global.yml" ||
+      filename === "world-defaults.yml" ||
+      !filename.endsWith(".yml")
+    ) {
+      continue;
+    }
+
+    const lookup = getPath(worldConfig, paperPath);
+    const rawValue = lookup.value;
+
+    const hasWorldOverride =
+      lookup.found &&
+      rawValue !== undefined &&
+      rawValue !== null &&
+      rawValue !== inheritedValue;
+
+    if (!hasWorldOverride) {
+      continue;
+    }
+
+    worlds.push({
+      world: filename.slice(0, -4),
+      value: rawValue,
+      explicit: true,
+      source: `paper/${filename} ${paperPath.join(".")}`
+    });
+  }
+
+  return {
+    kind: "world",
+    available: defaultValue !== undefined,
+    key,
+    source: "paper",
+    serverValue: bukkitValue,
+    bukkitValue,
+    defaultRaw,
+    defaultValue,
+    defaultOverridden: hasPaperDefaultOverride,
+    worlds
+  };
+}
+
+function resolveSpigotWorldSetting(definition, configurations, spigotOnly) {
   const key = definition.key;
   const server = configurations.files["server.properties"];
   const spigot = configurations.files["spigot.yml"];

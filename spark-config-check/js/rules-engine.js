@@ -61,8 +61,12 @@ function evaluateOutcomeRule(rule, context) {
   for (const outcome of rule.outcomes ?? []) {
     if (evaluateExpression(outcome.expression, context, values)) {
       return {
-        ...baseResult(rule, normalizeStatus(outcome.status, "unknown"), interpolate(outcome.message, values)),
-        values
+        ...baseResult(
+            rule,
+            normalizeStatus(outcome.status, "unknown"),
+            interpolate(outcome.message, values)
+        ),
+        ...(rule.showValues ? { values } : {})
       };
     }
   }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "rulesVersion": "2.0.0",
+  "rulesVersion": "2.1.0",
   "inputs": {
     "compressionThreshold": {
       "type": "config-value",
@@ -14,6 +14,21 @@
       "file": "server.properties",
       "path": [
         "enable-rcon"
+      ]
+    },
+    "enableQuery": {
+      "type": "config-value",
+      "file": "server.properties",
+      "path": [
+        "enable-query"
+      ]
+    },
+    "queryPlugins": {
+      "type": "config-value",
+      "file": "bukkit.yml",
+      "path": [
+        "settings",
+        "query-plugins"
       ]
     },
     "onlineMode": {
@@ -92,13 +107,147 @@
       "key": "mob-spawn-range"
     }
   },
+
   "rules": [
+    {
+      "id": "online-mode",
+      "type": "outcomes",
+      "showValues": false,
+      "group": "server.properties",
+      "title": "Online mode check",
+      "values": {
+        "onlineMode": "@inputs.onlineMode.value",
+        "velocityEnabled": "@inputs.velocityEnabled.value",
+        "velocityOnlineMode": "@inputs.velocityOnlineMode.value",
+        "bungeeEnabled": "@inputs.bungeeEnabled.value",
+        "bungeeOnlineMode": "@inputs.bungeeOnlineMode.value"
+      },
+      "outcomes": [
+        {
+          "expression": {
+            "ref": "$onlineMode",
+            "operator": "exists",
+            "value": false
+          },
+          "status": "unknown",
+          "message": "server.properties → online-mode was not found."
+        },
+        {
+          "expression": {
+            "all": [
+              {
+                "ref": "$velocityEnabled",
+                "operator": "equals",
+                "value": true
+              },
+              {
+                "ref": "$velocityOnlineMode",
+                "operator": "equals",
+                "value": true
+              }
+            ]
+          },
+          "status": "pass",
+          "message": "Proxy: Velocity, Online: true."
+        },
+        {
+          "expression": {
+            "all": [
+              {
+                "ref": "$velocityEnabled",
+                "operator": "equals",
+                "value": true
+              },
+              {
+                "ref": "$velocityOnlineMode",
+                "operator": "notEquals",
+                "value": true
+              }
+            ]
+          },
+          "status": "warning",
+          "message": "Proxy: Velocity, Online: false."
+        },
+        {
+          "expression": {
+            "all": [
+              {
+                "ref": "$bungeeEnabled",
+                "operator": "equals",
+                "value": true
+              },
+              {
+                "ref": "$bungeeOnlineMode",
+                "operator": "equals",
+                "value": true
+              }
+            ]
+          },
+          "status": "pass",
+          "message": "Proxy: BungeeCord, Online: true."
+        },
+        {
+          "expression": {
+            "all": [
+              {
+                "ref": "$bungeeEnabled",
+                "operator": "equals",
+                "value": true
+              },
+              {
+                "ref": "$bungeeOnlineMode",
+                "operator": "notEquals",
+                "value": true
+              }
+            ]
+          },
+          "status": "warning",
+          "message": "Proxy: BungeeCord, Online: false."
+        },
+        {
+          "expression": {
+            "ref": "$onlineMode",
+            "operator": "equals",
+            "value": true
+          },
+          "status": "pass",
+          "message": "Proxy: None, Online: true."
+        }
+      ],
+      "defaultOutcome": {
+        "status": "warning",
+        "message": "Proxy: None, Online: false."
+      },
+      "description": "Checks whether player authentication is enabled either directly by the server or by the configured Velocity or BungeeCord proxy."
+    },
+
+    {
+      "id": "effective-view-distance",
+      "type": "world-limit",
+      "group": "server.properties",
+      "title": "Effective view distance",
+      "input": "@inputs.viewDistance",
+      "maximum": 10,
+      "severity": "warning",
+      "description": "Resolves server.properties, the Spigot default, and explicit per-world overrides."
+    },
+
+    {
+      "id": "effective-simulation-distance",
+      "type": "world-limit",
+      "group": "server.properties",
+      "title": "Effective simulation distance",
+      "input": "@inputs.simulationDistance",
+      "maximum": 8,
+      "severity": "warning",
+      "description": "Resolves server.properties, the Spigot default, and explicit per-world overrides."
+    },
     {
       "id": "network-compression-threshold",
       "type": "outcomes",
       "group": "server.properties",
       "title": "Network compression threshold",
-      "description": "Lower values compress more packets and use more CPU. Higher values reduce compression work but may increase network traffic.",
+      "description": "Lower values compress more packets and use more CPU. Higher values reduce compression work but may increase network traffic. A value of -1 disables compression on the backend connection.",
       "values": {
         "value": "@inputs.compressionThreshold.value"
       },
@@ -111,6 +260,15 @@
           },
           "status": "unknown",
           "message": "The network compression threshold was not found."
+        },
+        {
+          "expression": {
+            "ref": "$value",
+            "operator": "equals",
+            "value": -1
+          },
+          "status": "info",
+          "message": "Network compression is disabled. This is only appropriate when the proxy and backend server run on the same physical machine; otherwise, backend traffic is sent uncompressed over the network."
         },
         {
           "expression": {
@@ -160,6 +318,85 @@
         "status": "warning",
         "message": "RCON is enabled. Confirm that this was intentional and that access is properly restricted."
       }
+    },
+    {
+      "id": "query-plugins",
+      "type": "outcomes",
+      "group": "server.properties",
+      "title": "Server query",
+      "description": "Checks whether plugin names are included in GameSpy query responses.",
+      "values": {
+        "enableQuery": "@inputs.enableQuery.value",
+        "queryPlugins": "@inputs.queryPlugins.value"
+      },
+      "outcomes": [
+        {
+          "expression": {
+            "ref": "$enableQuery",
+            "operator": "equals",
+            "value": false
+          },
+          "status": "pass",
+          "message": "Server query is disabled."
+        },
+        {
+          "expression": {
+            "all": [
+              {
+                "ref": "$enableQuery",
+                "operator": "equals",
+                "value": true
+              },
+              {
+                "ref": "$queryPlugins",
+                "operator": "equals",
+                "value": false
+              }
+            ]
+          },
+          "status": "pass",
+          "message": "Server query is enabled, but plugin names are not exposed."
+        },
+        {
+          "expression": {
+            "all": [
+              {
+                "ref": "$enableQuery",
+                "operator": "equals",
+                "value": true
+              },
+              {
+                "ref": "$queryPlugins",
+                "operator": "equals",
+                "value": true
+              }
+            ]
+          },
+          "status": "info",
+          "message": "Server query is enabled and exposes installed plugin names. Disable query-plugins unless you rely on this information."
+        }
+      ],
+      "defaultOutcome": {
+        "status": "unknown",
+        "message": "Could not determine the server query configuration."
+      }
+    },
+    {
+      "id": "mob-spawn-range",
+      "type": "world-relation",
+      "group": "Spigot world settings",
+      "title": "Mob spawn range",
+      "leftInput": "@inputs.mobSpawnRange",
+      "rightInput": "@inputs.simulationDistance",
+      "allowedOffsets": [
+        -1,
+        0
+      ],
+      "minimumExclusive": 2,
+      "minimumSeverity": "warning",
+      "severity": "info",
+      "skipWhenUnavailable": true,
+      "description": "Mob spawn range should generally equal the effective simulation distance or be one chunk lower, while remaining greater than 2."
     },
     {
       "id": "redstone-implementation",
@@ -238,112 +475,6 @@
         "status": "info",
         "message": "Pathfinding updates on block changes are enabled. Setting this to false may reduce pathfinding overhead."
       }
-    },
-    {
-      "id": "online-mode",
-      "type": "outcomes",
-      "group": "Misc",
-      "title": "Online mode check",
-      "values": {
-        "onlineMode": "@inputs.onlineMode.value",
-        "velocityEnabled": "@inputs.velocityEnabled.value",
-        "velocityOnlineMode": "@inputs.velocityOnlineMode.value",
-        "bungeeEnabled": "@inputs.bungeeEnabled.value",
-        "bungeeOnlineMode": "@inputs.bungeeOnlineMode.value"
-      },
-      "outcomes": [
-        {
-          "expression": {
-            "ref": "$onlineMode",
-            "operator": "exists",
-            "value": false
-          },
-          "status": "unknown",
-          "message": "server.properties \u2192 online-mode was not found."
-        },
-        {
-          "expression": {
-            "any": [
-              {
-                "ref": "$onlineMode",
-                "operator": "equals",
-                "value": true
-              },
-              {
-                "all": [
-                  {
-                    "ref": "$velocityEnabled",
-                    "operator": "equals",
-                    "value": true
-                  },
-                  {
-                    "ref": "$velocityOnlineMode",
-                    "operator": "equals",
-                    "value": true
-                  }
-                ]
-              },
-              {
-                "all": [
-                  {
-                    "ref": "$bungeeEnabled",
-                    "operator": "equals",
-                    "value": true
-                  },
-                  {
-                    "ref": "$bungeeOnlineMode",
-                    "operator": "equals",
-                    "value": true
-                  }
-                ]
-              }
-            ]
-          },
-          "status": "pass",
-          "message": "Player authentication is enabled."
-        }
-      ],
-      "defaultOutcome": {
-        "status": "warning",
-        "message": "The server appears to accept unauthenticated players."
-      }
-    },
-    {
-      "id": "effective-view-distance",
-      "type": "world-limit",
-      "group": "World distances",
-      "title": "Effective view distance",
-      "input": "@inputs.viewDistance",
-      "maximum": 10,
-      "severity": "warning",
-      "description": "Resolves server.properties, the Spigot default, and explicit per-world overrides."
-    },
-    {
-      "id": "effective-simulation-distance",
-      "type": "world-limit",
-      "group": "World distances",
-      "title": "Effective simulation distance",
-      "input": "@inputs.simulationDistance",
-      "maximum": 8,
-      "severity": "warning",
-      "description": "Resolves server.properties, the Spigot default, and explicit per-world overrides."
-    },
-    {
-      "id": "mob-spawn-range",
-      "type": "world-relation",
-      "group": "Spigot world settings",
-      "title": "Mob spawn range",
-      "leftInput": "@inputs.mobSpawnRange",
-      "rightInput": "@inputs.simulationDistance",
-      "allowedOffsets": [
-        -1,
-        0
-      ],
-      "minimumExclusive": 2,
-      "minimumSeverity": "warning",
-      "severity": "info",
-      "skipWhenUnavailable": true,
-      "description": "Mob spawn range should generally equal the effective simulation distance or be one chunk lower, while remaining greater than 2."
     }
   ]
 }
