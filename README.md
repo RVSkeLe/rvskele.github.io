@@ -1,23 +1,9 @@
 # Profiler Utils
+Static GitHub Pages tools for Minecraft Spark reports/profiles.
 
-A collection of small, browser-based utilities for Minecraft server administration and profiling.
+## Structure
+- `/spark-config-check/` — report URL configuration checker. Checks are plain JavaScript in `checks.js`; no JSON rule DSL.
+- `/spark-profile-tools/analyzer.html` — plugin resource attribution for `.sparkprofile` files.
+- `/spark-profile-tools/cpu-cleaner.html` — removes identifiable idle/blocking samples and exports a modified `.sparkprofile`.
 
-Each tool is a standalone static web application that runs entirely in the browser and can be hosted directly on GitHub Pages.
-
-## Projects
-
-| Project                         | Description                                                                                                                             |
-| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| **Spark Configuration Checker** | Analyze the configuration contained in a spark report and validate Paper, Spigot, and vanilla settings using a declarative rule engine. |
-
-More tools will be added over time.
-
-## GitHub Pages
-
-This repository is completely static and requires no build process.
-
-Once GitHub Pages is enabled, the landing page lists every available project, each hosted under its own directory.
-
-## License
-
-See the LICENSE file if present.
+Everything is static. `.sparkprofile` files are processed locally in the browser.
