@@ -2,7 +2,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 
-WEB_ROOT = Path(__file__).parent / "spark-config-check"
+WEB_ROOT = Path(__file__).parent
 
 
 class NoCacheHandler(SimpleHTTPRequestHandler):
